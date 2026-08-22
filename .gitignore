@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Runtime data
+data/
+db/
+snapshots/
+tmp/
+logs/
+*.log
+
+# Model weights and caches
+*.pt
+*.onnx
+.cache/
+
+# Test/build artifacts
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+.mypy_cache/

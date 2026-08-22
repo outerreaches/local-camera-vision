@@ -1,0 +1,65 @@
+service:
+  host: 127.0.0.1
+  port: 8091
+  data_dir: data
+  database_path: data/events.sqlite3
+  snapshot_dir: data/snapshots
+  tmp_dir: data/tmp
+camera:
+  name: Camera
+  channel: 0
+  host_env: RTSP_HOST
+  rtsp_url_template_env: RTSP_URL_TEMPLATE
+  user_env: RTSP_USER
+  password_env: RTSP_PASSWORD
+  port_env: RTSP_PORT
+  default_rtsp_port: 554
+  stream_path_template: h264Preview_{stream_number:02d}_main
+  capture_timeout_seconds: 15
+prompts:
+- name: person_in_scene
+  text: person in the scene
+  enabled: true
+  min_score: 0.5
+zones:
+- name: full_frame
+  enabled: true
+  polygon: []
+notifications:
+  enabled: false
+  cooldown_seconds: 300
+  dry_run: true
+face_recognition:
+  enabled: false
+  known_faces_dir: data/faces
+  threshold: 0.6
+camera_dashboard:
+  enabled: false
+  url: http://127.0.0.1:8090
+  poll_interval_seconds: 5
+  channel: 0
+  trigger_types:
+  - people
+vlm:
+  enabled: false
+  backend: mock
+  server_url: http://127.0.0.1:8084
+  model: gemma-4-e2b
+  max_tokens: 1600
+  timeout_seconds: 60
+pipeline:
+  enabled: false
+  cooldown_seconds: 60
+  recent_context_seconds: 60
+  retention_hours: 24
+yolo:
+  enabled: false
+  backend: mock
+  confidence: 0.5
+  poll_interval_seconds: 3
+  model_path: yolo11n.pt
+
+# For a real YOLO-only deployment, set pipeline.enabled and yolo.enabled
+# to true while leaving camera_dashboard.enabled false.
+# Keep RTSP credentials in an ignored environment file.
+# Set vlm.backend to gemma4-e2b for a local VLM server.

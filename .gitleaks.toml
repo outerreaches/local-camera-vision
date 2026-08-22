@@ -1,0 +1,16 @@
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''^\.env\.example$''',
+  '''^tests/''',
+]
+regexes = [
+  '''camera\.example\.invalid''',
+  '''replace-with-a-local-secret''',
+  '''replace-with-a-long-random-token''',
+  '''secret-token''',
+  '''rtsp://user:secret@cam:554''',
+  '''rtsp://admin:pw@doorbell\.local''',
+]

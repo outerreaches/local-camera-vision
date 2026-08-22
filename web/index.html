@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Camera Vision</title>
+    <link rel="stylesheet" href="/web/style.css" />
+  </head>
+  <body>
+    <!-- ═══════════ STATUS BAR ═══════════ -->
+    <header class="status-bar" id="statusBar">
+      <div class="status-left">
+        <span id="statusDot" class="dot dot-ok"></span>
+        <span id="statusText">Connecting…</span>
+      </div>
+      <div class="status-right">
+        <span id="gemmaCard" class="server-card" title="Gemma 4 E2B VLM server">gemma —</span>
+        <span id="pipelineStatus">pipeline —</span>
+        <span id="refreshTime">—</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ═══════════ DETECTION FEED ═══════════ -->
+      <section id="feed">
+        <h2>Detections <span id="eventCount"></span></h2>
+        <div id="eventList" class="event-list"></div>
+      </section>
+
+      <!-- ═══════════ SETTINGS ═══════════ -->
+      <section id="settingsPanel">
+        <h2 class="collapsible" id="settingsToggle">Settings ▾</h2>
+        <div id="settingsBody">
+          <form id="settingsForm">
+            <fieldset>
+              <legend>Camera</legend>
+              <label>Name <input name="camera.name" /></label>
+              <label>Channel <input name="camera.channel" type="number" min="0" /></label>
+              <label>Capture timeout (s) <input name="camera.capture_timeout_seconds" type="number" min="1" max="60" /></label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Classification Prompt</legend>
+              <p id="classificationPrompt" style="margin:0;color:#94a3b8;font-size:0.85rem;font-style:italic">—</p>
+            </fieldset>
+
+            <fieldset>
+              <legend>VLM Context</legend>
+              <label>Recent context window (s) <input name="pipeline.recent_context_seconds" type="number" min="0" max="600" /></label>
+              <p style="margin:0;color:#94a3b8;font-size:0.8rem">Use the previous detection's context description when it happened within this many seconds. Set to 0 to disable.</p>
+            </fieldset>
+
+            <button type="submit" class="btn btn-primary">Save settings</button>
+            <span id="settingsMsg"></span>
+
+            <hr />
+            <label class="inline-label">
+              API token
+              <input id="apiToken" type="password" autocomplete="off" placeholder="CAMERA_VISION_API_TOKEN" />
+              <button type="button" id="saveToken" class="btn btn-sm">Save</button>
+            </label>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <template id="eventCardTemplate">
+      <div class="event-card">
+        <div class="event-snapshot">
+          <button class="frame-nav frame-prev" title="Previous frame">◀</button>
+          <button class="frame-nav frame-next" title="Next frame">▶</button>
+          <canvas class="overlay-canvas"></canvas>
+          <img class="snapshot-img" alt="Detection snapshot" />
+          <div class="frame-indicator"></div>
+        </div>
+        <div class="event-meta">
+          <div class="event-header">
+            <span class="event-id"></span>
+            <span class="event-time"></span>
+          </div>
+          <ul class="event-detections"></ul>
+        </div>
+      </div>
+    </template>
+
+    <script src="/web/app.js"></script>
+  </body>
+</html>

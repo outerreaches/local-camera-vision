@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "local-camera-vision"
+version = "0.1.0"
+description = "Local camera vision pipeline with YOLO detection, optional NVR triggers, and VLM classification."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "pydantic>=2.6",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "httpx>=0.27",
+]
+yolo = [
+  "numpy>=1.26",
+  "ultralytics>=8.3",
+]
+
+[project.scripts]
+local-camera-vision = "camera_vision.app:main"
+local-camera-vision-capture-frame = "camera_vision.capture:main"
+
+[project.urls]
+Repository = "https://github.com/outerreaches/local-camera-vision"
+Issues = "https://github.com/outerreaches/local-camera-vision/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/camera_vision"]
+artifacts = ["src/camera_vision/web/**"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
