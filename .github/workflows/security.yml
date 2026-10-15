@@ -17,8 +17,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+      # Run the gitleaks binary directly instead of gitleaks/gitleaks-action.
+      # The action computes its scan range as "<before>..<after>" and breaks on
+      # the first push of a new repository (the "before" ref resolves to the
+      # initial commit's parent, which does not exist -> "ambiguous argument"
+      # -> exit 1). The binary with --all is deterministic and always scans the
+      # full history.
+      - name: Run gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz -o /tmp/gitleaks.tgz
+          sudo tar -xzf /tmp/gitleaks.tgz -C /usr/local/bin gitleaks
+          gitleaks detect --source . --no-banner --log-opts="--all" --config .gitleaks.toml
