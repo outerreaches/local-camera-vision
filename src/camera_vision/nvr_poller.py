@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -59,7 +59,7 @@ class CameraDashboardPoller:
                             channel=channel,
                             detection_type=det_type,
                             active=True,
-                            ts=asyncio.get_event_loop().time(),
+                            ts=time.monotonic(),
                         )
         return None
 

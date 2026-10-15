@@ -184,7 +184,7 @@ def create_app(
             try:
                 trigger = await app.state.nvr_poller.poll_once()
                 if trigger is not None:
-                    now = asyncio.get_event_loop().time()
+                    now = asyncio.get_running_loop().time()
                     if cooldown > 0 and app.state._last_trigger_ts > 0 and (now - app.state._last_trigger_ts) < cooldown:
                         _pipeline_log.debug("Trigger suppressed by cooldown")
                     else:
@@ -288,7 +288,7 @@ def create_app(
                 )
 
                 if yolo_result.person_detected:
-                    now = asyncio.get_event_loop().time()
+                    now = asyncio.get_running_loop().time()
                     if cooldown > 0 and app.state._last_trigger_ts > 0 and (now - app.state._last_trigger_ts) < cooldown:
                         _pipeline_log.debug("YOLO trigger suppressed by cooldown")
                         # Person detected but suppressed — clean up snapshot
@@ -580,7 +580,7 @@ def create_app(
 
     @app.get("/api/pipeline/status")
     async def pipeline_status() -> dict[str, object]:
-        now = asyncio.get_event_loop().time()
+        now = asyncio.get_running_loop().time()
         last = app.state._last_trigger_ts
         return {
             "enabled": app.state._pipeline_enabled,
