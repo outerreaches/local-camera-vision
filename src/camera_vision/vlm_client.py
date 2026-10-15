@@ -154,6 +154,27 @@ class VlmClient:
                 return False if normalized not in {"none", "null", ""} else None
         return None
 
+    TEXT_FIELDS = ("direction", "carrying", "activity", "urgency", "summary", "context_description")
+
+    def _text_or_none(self, value: Any) -> str | None:
+        """Flatten a schema text field to a string.
+
+        Gemma sometimes answers with a list (`"activity": ["looking through a camera"]`) or a
+        number where the schema asks for a string; that must not reach DetectionEvent.labels.
+        """
+        if value is None:
+            return None
+        if isinstance(value, dict):
+            value = list(value.values())
+        if isinstance(value, (list, tuple)):
+            parts = [text for text in (self._text_or_none(item) for item in value) if text]
+            if not parts:
+                return None
+            # sentences join with a space, short phrases with a comma
+            return " ".join(parts) if all(part.endswith((".", "!", "?")) for part in parts) else ", ".join(parts)
+        text = str(value).strip()
+        return text or None
+
     def _coerce_key_value_field(self, key: str, value: str) -> Any:
         value = value.strip()
         if value.lower() in {"null", "none", "n/a", ""}:
@@ -260,6 +281,9 @@ class VlmClient:
                 data = self._parse_key_value_response(raw)
                 if data is None:
                     raise
+            if not isinstance(data, dict):
+                raise json.JSONDecodeError("VLM response is not a JSON object", raw, 0)
+            data = {**data, **{key: self._text_or_none(data[key]) for key in self.TEXT_FIELDS if key in data}}
 
             incomplete_error = self._incomplete_classification_error(data)
             if incomplete_error:
@@ -277,8 +301,8 @@ class VlmClient:
                 activity=data.get("activity"),
                 suspicious=self._parse_bool_or_none(data.get("suspicious")),
                 urgency=data.get("urgency"),
-                summary=data.get("summary", ""),
-                context_description=data.get("context_description", ""),
+                summary=data.get("summary") or "",
+                context_description=data.get("context_description") or "",
                 raw_response=raw,
                 response_source=response_source,
                 finish_reason=finish_reason,

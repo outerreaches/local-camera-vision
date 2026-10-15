@@ -113,6 +113,47 @@ class TestVlmClient:
         assert result.summary == "A person is standing at the front door looking at their phone."
         assert result.context_description.startswith("The camera captures a person")
 
+    def test_list_valued_text_fields_become_strings(self):
+        # Gemma returned "activity": ["looking through a camera"] on 2026-09-29; the list reached
+        # DetectionEvent.labels and failed validation, losing the event
+        client = VlmClient(server_url="http://fake:8084", model="gemma-4-e2b")
+        response = {
+            "choices": [{
+                "message": {
+                    "content": '{"person_present": true, "direction": ["standing"], "carrying": [], "activity": ["looking through a camera"], "suspicious": false, "urgency": 2, "summary": ["A person at the door.", "They look at the camera."], "context_description": "A person stands at the door."}'
+                }
+            }]
+        }
+        result = client._parse_classification(response)
+        assert result.error is None
+        assert result.activity == "looking through a camera"
+        assert result.direction == "standing"
+        assert result.carrying is None
+        assert result.urgency == "2"
+        assert result.summary == "A person at the door. They look at the camera."
+        for value in (result.direction, result.activity, result.urgency, result.summary, result.context_description):
+            assert isinstance(value, str)
+
+    def test_empty_list_activity_counts_as_missing(self):
+        client = VlmClient(server_url="http://fake:8084", model="gemma-4-e2b")
+        response = {
+            "choices": [{
+                "message": {
+                    "content": '{"person_present": true, "activity": [], "suspicious": false, "summary": "A person.", "context_description": "A person stands still."}'
+                }
+            }]
+        }
+        result = client._parse_classification(response)
+        assert result.error is not None
+        assert "activity" in result.error
+
+    def test_non_object_json_returns_error(self):
+        client = VlmClient(server_url="http://fake:8084", model="gemma-4-e2b")
+        response = {"choices": [{"message": {"content": '["person", "standing"]'}}]}
+        result = client._parse_classification(response)
+        assert result.error is not None
+        assert result.activity is None
+
     def test_incomplete_key_value_response_returns_parse_error(self):
         client = VlmClient(server_url="http://fake:8084", model="gemma-4-e2b")
         response = {
